@@ -1,302 +1,664 @@
 {
+  "metadata": {
+    "description": "US Census ACS 5-Year Estimates for executive business intelligence",
+    "source": "U.S. Census Bureau American Community Survey (ACS) 5-Year Estimates",
+    "version": "2018-2024",
+    "generated_at": "2026-05-03"
+  },
+  "derived_metrics": {
+    "homeownership_rate": {
+      "formula": "owner_occupied / total_housing_units",
+      "description": "Percentage of housing units that are owner-occupied",
+      "format": "percent"
+    },
+    "renter_rate": {
+      "formula": "renter_occupied / total_housing_units",
+      "description": "Percentage of housing units that are renter-occupied",
+      "format": "percent"
+    },
+    "housing_vacancy_rate": {
+      "formula": "vacant_units / total_housing_units",
+      "description": "Percentage of housing units that are vacant",
+      "format": "percent"
+    },
+    "price_to_income_ratio": {
+      "formula": "median_home_value / median_household_income",
+      "description": "Home price to income ratio (5+ indicates expensive market)",
+      "format": "ratio"
+    },
+    "rent_burden": {
+      "formula": "median_gross_rent / median_household_income",
+      "description": "Income spent on rent (30%+ is cost-burdened)",
+      "format": "percent"
+    },
+    "gross_rental_yield": {
+      "formula": "(median_gross_rent * 12) / median_home_value * 100",
+      "description": "Annual gross rental yield as percentage of property value",
+      "format": "percent"
+    },
+    "unemployment_rate": {
+      "formula": "unemployed / in_labor_force",
+      "description": "Percentage of labor force unemployed",
+      "format": "percent"
+    },
+    "employment_rate": {
+      "formula": "employed / in_labor_force",
+      "description": "Percentage of labor force employed",
+      "format": "percent"
+    },
+    "labor_force_participation": {
+      "formula": "in_labor_force / population",
+      "description": "Working-age population in labor force",
+      "format": "percent"
+    },
+    "poverty_rate": {
+      "formula": "below_poverty_line / population",
+      "description": "Population below poverty line",
+      "format": "percent"
+    },
+    "bachelors_degree_rate": {
+      "formula": "bachelors_degree / total_pop_25plus",
+      "description": "Adults 25+ with bachelor's degree",
+      "format": "percent"
+    },
+    "college_educated_rate": {
+      "formula": "(bachelors + masters + doctorate) / total_pop_25plus",
+      "description": "Adults 25+ with college degree or higher",
+      "format": "percent"
+    },
+    "digital_access_score": {
+      "formula": "(computer_access_rate * 0.4 + broadband_access_rate * 0.6) * 100",
+      "description": "Composite digital access indicator (0-100)",
+      "format": "score"
+    },
+    "insured_rate": {
+      "formula": "insured / population",
+      "description": "Percentage with health insurance",
+      "format": "percent"
+    },
+    "market_opportunity_score": {
+      "formula": "0.30*income_score + 0.25*digital_score + 0.25*education_score + 0.20*employment_score",
+      "description": "Composite market opportunity score (0-100)",
+      "format": "score"
+    },
+    "economic_resilience_score": {
+      "formula": "weighted employment + labor + poverty + inequality",
+      "description": "Economic stability and resilience indicator (0-100)",
+      "format": "score"
+    },
+    "housing_affordability_index": {
+      "formula": "100 - (price_to_income_ratio/10*50 + rent_burden/0.5*50)",
+      "description": "Composite housing affordability (0-100, higher = more affordable)",
+      "format": "score"
+    },
+    "gini_index": {
+      "formula": "income inequality coefficient",
+      "description": "Income inequality (0=perfect equality, 1=perfect inequality)",
+      "format": "index"
+    },
+    "consumer_spending_power": {
+      "formula": "median_household_income * (1 - rent_burden)",
+      "description": "Income adjusted for housing costs",
+      "format": "currency"
+    },
+    "population_density": {
+      "formula": "total_population / land_area_sq_km",
+      "description": "Residents per square kilometer",
+      "format": "number",
+      "label": "Population Density",
+      "category": "market_size"
+    },
+    "housing_density": {
+      "formula": "total_housing_units / land_area_sq_km",
+      "description": "Housing units per square kilometer",
+      "format": "number",
+      "label": "Housing Density",
+      "category": "housing_market"
+    },
+    "prosperity_index": {
+      "formula": "weighted income + employment + inverse poverty",
+      "description": "Composite affluence and labor health score",
+      "format": "score",
+      "label": "Prosperity Index",
+      "category": "executive_signal"
+    },
+    "affluence_index": {
+      "formula": "weighted household income + per-capita income + affluent households",
+      "description": "Household wealth concentration score",
+      "format": "score",
+      "label": "Affluence Index",
+      "category": "purchasing_power"
+    },
+    "market_momentum_index": {
+      "formula": "average of market opportunity, resilience, and digital access",
+      "description": "Forward-looking market quality score",
+      "format": "score",
+      "label": "Market Momentum",
+      "category": "composite_scores"
+    },
+    "cost_pressure_index": {
+      "formula": "weighted price-to-income + rent burden + inverse affordability",
+      "description": "Operating and affordability pressure score",
+      "format": "score",
+      "label": "Cost Pressure",
+      "category": "risk"
+    },
+    "talent_depth_index": {
+      "formula": "weighted college attainment + labor force + employment",
+      "description": "Workforce strength score",
+      "format": "score",
+      "label": "Talent Depth",
+      "category": "workforce"
+    },
+    "executive_growth_score": {
+      "formula": "average of prosperity, market momentum, talent depth, and inverse cost pressure",
+      "description": "Executive summary score for scalable growth",
+      "format": "score",
+      "label": "Executive Growth Score",
+      "category": "composite_scores"
+    },
+    "consumer_demand_index": {
+      "formula": "weighted income, spending power, digital access, and population scale",
+      "description": "Composite local demand score",
+      "format": "score",
+      "label": "Consumer Demand",
+      "category": "purchasing_power"
+    },
+    "senior_services_index": {
+      "formula": "weighted elderly population, public coverage, and resilience",
+      "description": "Potential demand for senior-focused services",
+      "format": "score",
+      "label": "Senior Services Index",
+      "category": "healthcare"
+    },
+    "logistics_access_index": {
+      "formula": "weighted vehicle access, broadband, work-from-home, and digital access",
+      "description": "Operational access and last-mile readiness score",
+      "format": "score",
+      "label": "Logistics Access",
+      "category": "operational_readiness"
+    }
+  },
+  "industry_configs": {
+    "general": {
+      "name": "General Overview",
+      "description": "Balanced metrics across demographics, economy, and housing",
+      "default_metric": "total_population",
+      "smart_metrics": [
+        {
+          "key": "total_population",
+          "label": "Population",
+          "format": "compact",
+          "category": "market_size"
+        },
+        {
+          "key": "median_household_income",
+          "label": "Median Income",
+          "format": "currency",
+          "category": "purchasing_power",
+          "good_high": true
+        },
+        {
+          "key": "market_opportunity_score",
+          "label": "Market Opportunity",
+          "format": "score",
+          "category": "composite",
+          "score_label": "MOS",
+          "good_high": true
+        },
+        {
+          "key": "executive_growth_score",
+          "label": "Executive Growth Score",
+          "format": "score",
+          "category": "composite",
+          "score_label": "EGS",
+          "good_high": true
+        },
+        {
+          "key": "employment_rate",
+          "label": "Employment Rate",
+          "format": "percent",
+          "category": "economic",
+          "good_high": true
+        },
+        {
+          "key": "college_educated_rate",
+          "label": "College Educated",
+          "format": "percent",
+          "category": "workforce",
+          "good_high": true
+        },
+        {
+          "key": "housing_affordability_index",
+          "label": "Housing Affordability",
+          "format": "score",
+          "category": "housing",
+          "good_high": true
+        },
+        {
+          "key": "prosperity_index",
+          "label": "Prosperity Index",
+          "format": "score",
+          "category": "executive_signal",
+          "good_high": true
+        }
+      ],
+      "display_columns": [
+        "executive_growth_score",
+        "market_opportunity_score",
+        "prosperity_index",
+        "median_household_income",
+        "employment_rate",
+        "college_educated_rate",
+        "housing_affordability_index"
+      ]
+    },
+    "real_estate": {
+      "name": "Real Estate",
+      "description": "Investment and development metrics for property markets",
+      "default_metric": "median_home_value",
+      "smart_metrics": [
+        {
+          "key": "median_home_value",
+          "label": "Median Property Value",
+          "format": "currency",
+          "category": "valuation"
+        },
+        {
+          "key": "median_gross_rent",
+          "label": "Median Rent",
+          "format": "currency",
+          "category": "rental"
+        },
+        {
+          "key": "gross_rental_yield",
+          "label": "Rental Yield",
+          "format": "percent",
+          "category": "investment",
+          "good_high": true
+        },
+        {
+          "key": "homeownership_rate",
+          "label": "Homeownership",
+          "format": "percent",
+          "category": "tenure"
+        },
+        {
+          "key": "price_to_income_ratio",
+          "label": "Price-to-Income",
+          "format": "ratio",
+          "category": "affordability",
+          "good_low": true
+        },
+        {
+          "key": "housing_vacancy_rate",
+          "label": "Vacancy Rate",
+          "format": "percent",
+          "category": "market_softness",
+          "good_low": true
+        },
+        {
+          "key": "premium_housing_rate",
+          "label": "Premium Housing",
+          "format": "percent",
+          "category": "market_segment"
+        },
+        {
+          "key": "housing_affordability_index",
+          "label": "Affordability Index",
+          "format": "score",
+          "category": "composite",
+          "score_label": "HAI"
+        },
+        {
+          "key": "cost_pressure_index",
+          "label": "Cost Pressure",
+          "format": "score",
+          "category": "risk",
+          "good_low": true
+        }
+      ],
+      "display_columns": [
+        "median_home_value",
+        "gross_rental_yield",
+        "housing_affordability_index",
+        "cost_pressure_index",
+        "median_gross_rent",
+        "homeownership_rate",
+        "price_to_income_ratio",
+        "premium_housing_rate"
+      ]
+    },
+    "ecommerce": {
+      "name": "E-Commerce",
+      "description": "Digital adoption and consumer behavior metrics",
+      "default_metric": "digital_access_score",
+      "smart_metrics": [
+        {
+          "key": "digital_access_score",
+          "label": "Digital Access",
+          "format": "score",
+          "category": "digital_infrastructure",
+          "score_label": "DAI",
+          "good_high": true
+        },
+        {
+          "key": "broadband_access_rate",
+          "label": "Broadband Access",
+          "format": "percent",
+          "category": "connectivity",
+          "good_high": true
+        },
+        {
+          "key": "smartphone_access_rate",
+          "label": "Smartphone Access",
+          "format": "percent",
+          "category": "mobile",
+          "good_high": true
+        },
+        {
+          "key": "median_household_income",
+          "label": "Purchasing Power",
+          "format": "currency",
+          "category": "consumer",
+          "good_high": true
+        },
+        {
+          "key": "consumer_spending_power",
+          "label": "Spending Power",
+          "format": "currency",
+          "category": "consumer",
+          "derived": true,
+          "good_high": true
+        },
+        {
+          "key": "consumer_demand_index",
+          "label": "Consumer Demand",
+          "format": "score",
+          "category": "consumer",
+          "good_high": true
+        },
+        {
+          "key": "no_vehicle_rate",
+          "label": "No Vehicle (Last-Mile)",
+          "format": "percent",
+          "category": "logistics",
+          "good_low": true
+        },
+        {
+          "key": "logistics_access_index",
+          "label": "Logistics Access",
+          "format": "score",
+          "category": "logistics",
+          "good_high": true
+        },
+        {
+          "key": "work_from_home_rate",
+          "label": "Work From Home",
+          "format": "percent",
+          "category": "lifestyle"
+        },
+        {
+          "key": "median_age",
+          "label": "Median Age",
+          "format": "number",
+          "category": "demographics"
+        }
+      ],
+      "display_columns": [
+        "digital_access_score",
+        "consumer_demand_index",
+        "logistics_access_index",
+        "broadband_access_rate",
+        "smartphone_access_rate",
+        "median_household_income",
+        "consumer_spending_power",
+        "no_vehicle_rate"
+      ]
+    },
+    "finance_healthcare": {
+      "name": "Finance & Healthcare",
+      "description": "Insurance, banking, and healthcare access metrics",
+      "default_metric": "insured_rate",
+      "smart_metrics": [
+        {
+          "key": "insured_rate",
+          "label": "Insurance Coverage",
+          "format": "percent",
+          "category": "coverage",
+          "good_high": true
+        },
+        {
+          "key": "private_insurance_rate",
+          "label": "Private Coverage",
+          "format": "percent",
+          "category": "coverage"
+        },
+        {
+          "key": "public_insurance_rate",
+          "label": "Public Coverage",
+          "format": "percent",
+          "category": "coverage"
+        },
+        {
+          "key": "gini_index",
+          "label": "Income Inequality",
+          "format": "index",
+          "category": "economic",
+          "good_low": true
+        },
+        {
+          "key": "median_household_income",
+          "label": "Median Income",
+          "format": "currency",
+          "category": "economic",
+          "good_high": true
+        },
+        {
+          "key": "poverty_rate",
+          "label": "Poverty Rate",
+          "format": "percent",
+          "category": "economic",
+          "good_low": true
+        },
+        {
+          "key": "population_65plus_pct",
+          "label": "Elderly Population",
+          "format": "percent",
+          "category": "demographics"
+        },
+        {
+          "key": "economic_resilience_score",
+          "label": "Economic Resilience",
+          "format": "score",
+          "category": "composite",
+          "score_label": "ERS",
+          "good_high": true
+        },
+        {
+          "key": "senior_services_index",
+          "label": "Senior Services",
+          "format": "score",
+          "category": "healthcare"
+        }
+      ],
+      "display_columns": [
+        "insured_rate",
+        "economic_resilience_score",
+        "senior_services_index",
+        "private_insurance_rate",
+        "public_insurance_rate",
+        "gini_index",
+        "poverty_rate",
+        "population_65plus_pct"
+      ]
+    }
+  },
   "datasets": [
     {
-      "source_file": "core_demographics_income_2014_2024.csv",
-      "total_zcta5": 33791,
-      "total_counties": 3213,
-      "total_states": 56,
-      "data_columns": [
-        "total_population_2015",
-        "median_age_2015",
-        "median_household_income_2015",
-        "per_capita_income_2015",
-        "below_poverty_line_2015",
-        "aggregate_income_2015",
-        "gini_index_2015",
-        "state_2015",
-        "total_population_2016",
-        "median_age_2016",
-        "median_household_income_2016",
-        "per_capita_income_2016",
-        "below_poverty_line_2016",
-        "aggregate_income_2016",
-        "gini_index_2016",
-        "state_2016",
-        "total_population_2017",
-        "median_age_2017",
-        "median_household_income_2017",
-        "per_capita_income_2017",
-        "below_poverty_line_2017",
-        "aggregate_income_2017",
-        "gini_index_2017",
-        "state_2017",
-        "total_population_2018",
-        "median_age_2018",
-        "median_household_income_2018",
-        "per_capita_income_2018",
-        "below_poverty_line_2018",
-        "aggregate_income_2018",
-        "gini_index_2018",
-        "state_2018",
-        "total_population_2019",
-        "median_age_2019",
-        "median_household_income_2019",
-        "per_capita_income_2019",
-        "below_poverty_line_2019",
-        "aggregate_income_2019",
-        "gini_index_2019",
-        "state_2019",
-        "total_population_2020",
-        "median_age_2020",
-        "median_household_income_2020",
-        "per_capita_income_2020",
-        "below_poverty_line_2020",
-        "aggregate_income_2020",
-        "gini_index_2020",
-        "total_population_2021",
-        "median_age_2021",
-        "median_household_income_2021",
-        "per_capita_income_2021",
-        "below_poverty_line_2021",
-        "aggregate_income_2021",
-        "gini_index_2021",
-        "total_population_2022",
-        "median_age_2022",
-        "median_household_income_2022",
-        "per_capita_income_2022",
-        "below_poverty_line_2022",
-        "aggregate_income_2022",
-        "gini_index_2022",
-        "total_population_2023",
-        "median_age_2023",
-        "median_household_income_2023",
-        "per_capita_income_2023",
-        "below_poverty_line_2023",
-        "aggregate_income_2023",
-        "gini_index_2023"
+      "id": "real_estate",
+      "name": "Real Estate Market Signals",
+      "description": "Seven ACS 5-year vintages for housing demand, rent strength, affordability, and market risk.",
+      "category": "industry",
+      "industry_tags": [
+        "real_estate",
+        "mortgage",
+        "property_management",
+        "construction",
+        "site_selection"
+      ],
+      "default_metric": "market_opportunity_score",
+      "source_file": "industry_realestate_2018_2024",
+      "geographic_levels": [
+        "county",
+        "state"
       ],
       "years_available": [
-        "2015",
-        "2016",
-        "2017",
-        "2018",
-        "2019",
-        "2020",
-        "2021",
-        "2022",
-        "2023"
-      ]
-    },
-    {
-      "source_file": "core_education_employment_2014_2024.csv",
-      "total_zcta5": 33791,
-      "total_counties": 3213,
-      "total_states": 56,
-      "data_columns": [
-        "bachelors_degree_2015",
-        "masters_degree_2015",
-        "professional_degree_2015",
-        "doctorate_degree_2015",
-        "total_pop_25plus_2015",
-        "employed_2015",
-        "unemployed_2015",
-        "in_labor_force_2015",
-        "total_commuters_2015",
-        "mean_travel_time_work_2015",
-        "state_2015",
-        "bachelors_degree_2016",
-        "masters_degree_2016",
-        "professional_degree_2016",
-        "doctorate_degree_2016",
-        "total_pop_25plus_2016",
-        "employed_2016",
-        "unemployed_2016",
-        "in_labor_force_2016",
-        "total_commuters_2016",
-        "mean_travel_time_work_2016",
-        "state_2016",
-        "bachelors_degree_2017",
-        "masters_degree_2017",
-        "professional_degree_2017",
-        "doctorate_degree_2017",
-        "total_pop_25plus_2017",
-        "employed_2017",
-        "unemployed_2017",
-        "in_labor_force_2017",
-        "total_commuters_2017",
-        "mean_travel_time_work_2017",
-        "state_2017",
-        "bachelors_degree_2018",
-        "masters_degree_2018",
-        "professional_degree_2018",
-        "doctorate_degree_2018",
-        "total_pop_25plus_2018",
-        "employed_2018",
-        "unemployed_2018",
-        "in_labor_force_2018",
-        "total_commuters_2018",
-        "mean_travel_time_work_2018",
-        "state_2018",
-        "bachelors_degree_2019",
-        "masters_degree_2019",
-        "professional_degree_2019",
-        "doctorate_degree_2019",
-        "total_pop_25plus_2019",
-        "employed_2019",
-        "unemployed_2019",
-        "in_labor_force_2019",
-        "total_commuters_2019",
-        "mean_travel_time_work_2019",
-        "state_2019",
-        "bachelors_degree_2020",
-        "masters_degree_2020",
-        "professional_degree_2020",
-        "doctorate_degree_2020",
-        "total_pop_25plus_2020",
-        "employed_2020",
-        "unemployed_2020",
-        "in_labor_force_2020",
-        "total_commuters_2020",
-        "mean_travel_time_work_2020",
-        "bachelors_degree_2021",
-        "masters_degree_2021",
-        "professional_degree_2021",
-        "doctorate_degree_2021",
-        "total_pop_25plus_2021",
-        "employed_2021",
-        "unemployed_2021",
-        "in_labor_force_2021",
-        "total_commuters_2021",
-        "mean_travel_time_work_2021",
-        "bachelors_degree_2022",
-        "masters_degree_2022",
-        "professional_degree_2022",
-        "doctorate_degree_2022",
-        "total_pop_25plus_2022",
-        "employed_2022",
-        "unemployed_2022",
-        "in_labor_force_2022",
-        "total_commuters_2022",
-        "mean_travel_time_work_2022",
-        "bachelors_degree_2023",
-        "masters_degree_2023",
-        "professional_degree_2023",
-        "doctorate_degree_2023",
-        "total_pop_25plus_2023",
-        "employed_2023",
-        "unemployed_2023",
-        "in_labor_force_2023",
-        "total_commuters_2023",
-        "mean_travel_time_work_2023"
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
       ],
-      "years_available": [
-        "2015",
-        "2016",
-        "2017",
-        "2018",
-        "2019",
-        "2020",
-        "2021",
-        "2022",
-        "2023"
-      ]
-    },
-    {
-      "source_file": "core_housing_2014_2024.csv",
-      "total_zcta5": 33791,
-      "total_counties": 3213,
-      "total_states": 56,
-      "data_columns": [
-        "total_housing_units_2015",
-        "owner_occupied_2015",
-        "renter_occupied_2015",
-        "median_home_value_2015",
-        "median_gross_rent_2015",
-        "median_year_built_2015",
-        "median_rooms_2015",
-        "avg_household_size_2015",
-        "state_2015",
-        "total_housing_units_2016",
-        "owner_occupied_2016",
-        "renter_occupied_2016",
-        "median_home_value_2016",
-        "median_gross_rent_2016",
-        "median_year_built_2016",
-        "median_rooms_2016",
-        "avg_household_size_2016",
-        "state_2016",
-        "total_housing_units_2017",
-        "owner_occupied_2017",
-        "renter_occupied_2017",
-        "median_home_value_2017",
-        "median_gross_rent_2017",
-        "median_year_built_2017",
-        "median_rooms_2017",
-        "avg_household_size_2017",
-        "state_2017",
-        "total_housing_units_2018",
-        "owner_occupied_2018",
-        "renter_occupied_2018",
-        "median_home_value_2018",
-        "median_gross_rent_2018",
-        "median_year_built_2018",
-        "median_rooms_2018",
-        "avg_household_size_2018",
-        "state_2018",
-        "total_housing_units_2019",
-        "owner_occupied_2019",
-        "renter_occupied_2019",
-        "median_home_value_2019",
-        "median_gross_rent_2019",
-        "median_year_built_2019",
-        "median_rooms_2019",
-        "avg_household_size_2019",
-        "state_2019",
-        "total_housing_units_2020",
-        "owner_occupied_2020",
-        "renter_occupied_2020",
-        "median_home_value_2020",
-        "median_gross_rent_2020",
-        "median_year_built_2020",
-        "median_rooms_2020",
-        "avg_household_size_2020",
-        "total_housing_units_2021",
-        "owner_occupied_2021",
-        "renter_occupied_2021",
-        "median_home_value_2021",
-        "median_gross_rent_2021",
-        "median_year_built_2021",
-        "median_rooms_2021",
-        "avg_household_size_2021",
-        "total_housing_units_2022",
-        "owner_occupied_2022",
-        "renter_occupied_2022",
-        "median_home_value_2022",
-        "median_gross_rent_2022",
-        "median_year_built_2022",
-        "median_rooms_2022",
-        "avg_household_size_2022",
-        "total_housing_units_2023",
-        "owner_occupied_2023",
-        "renter_occupied_2023",
-        "median_home_value_2023",
-        "median_gross_rent_2023",
-        "median_year_built_2023",
-        "median_rooms_2023",
-        "avg_household_size_2023"
-      ],
-      "years_available": [
-        "2015",
-        "2016",
-        "2017",
-        "2018",
-        "2019",
-        "2020",
-        "2021",
-        "2022",
-        "2023"
+      "display_columns": [
+        "market_opportunity_score",
+        "executive_growth_score",
+        "median_home_value",
+        "median_gross_rent",
+        "gross_rental_yield",
+        "housing_affordability_index",
+        "cost_pressure_index",
+        "housing_vacancy_rate",
+        "consumer_demand_index",
+        "median_age",
+        "renter_rate"
       ]
     }
   ],
-  "generated_at": "2026-01-22T22:11:20.669383"
+  "metric_dimensions": {
+    "market_size": [
+      "total_population",
+      "total_housing_units",
+      "total_households"
+    ],
+    "purchasing_power": [
+      "median_household_income",
+      "per_capita_income",
+      "aggregate_income",
+      "consumer_spending_power",
+      "affluence_index",
+      "consumer_demand_index"
+    ],
+    "economic_health": [
+      "employment_rate",
+      "unemployment_rate",
+      "labor_force_participation",
+      "economic_resilience_score"
+    ],
+    "housing_market": [
+      "median_home_value",
+      "median_gross_rent",
+      "homeownership_rate",
+      "housing_vacancy_rate",
+      "gross_rental_yield",
+      "housing_density",
+      "cost_pressure_index"
+    ],
+    "digital_infrastructure": [
+      "digital_access_score",
+      "broadband_access_rate",
+      "computer_access_rate",
+      "no_internet_rate"
+    ],
+    "education": [
+      "bachelors_degree_rate",
+      "college_educated_rate",
+      "masters_plus_rate",
+      "hs_graduation_rate",
+      "talent_depth_index"
+    ],
+    "income_distribution": [
+      "gini_index",
+      "low_income_hh_pct",
+      "middle_income_hh_pct",
+      "upper_middle_income_hh_pct",
+      "high_income_hh_pct",
+      "affluent_hh_pct"
+    ],
+    "healthcare": [
+      "insured_rate",
+      "private_insurance_rate",
+      "public_insurance_rate",
+      "population_65plus_pct",
+      "senior_services_index"
+    ],
+    "operational_readiness": [
+      "population_density",
+      "logistics_access_index",
+      "vehicle_availability_rate",
+      "work_from_home_rate"
+    ],
+    "executive_signal": [
+      "prosperity_index",
+      "executive_growth_score",
+      "market_momentum_index"
+    ],
+    "composite_scores": [
+      "market_opportunity_score",
+      "housing_affordability_index",
+      "economic_resilience_score",
+      "digital_access_score",
+      "executive_growth_score",
+      "market_momentum_index"
+    ]
+  },
+  "visualization_config": {
+    "heatmap": {
+      "low_color": "#2166ac",
+      "mid_color": "#f7f7f7",
+      "high_color": "#1a9850",
+      "steps": 5
+    },
+    "percentile_bands": [
+      {
+        "name": "Top 10%",
+        "class": "percentile-top",
+        "threshold": 90
+      },
+      {
+        "name": "Top 25%",
+        "class": "percentile-upper",
+        "threshold": 75
+      },
+      {
+        "name": "Top 50%",
+        "class": "percentile-mid",
+        "threshold": 50
+      },
+      {
+        "name": "Bottom 50%",
+        "class": "percentile-lower",
+        "threshold": 0
+      }
+    ],
+    "trend_indicators": [
+      {
+        "name": "Accelerating",
+        "class": "trend-up",
+        "symbol": "\u2191"
+      },
+      {
+        "name": "Stable",
+        "class": "trend-stable",
+        "symbol": "\u2192"
+      },
+      {
+        "name": "Declining",
+        "class": "trend-down",
+        "symbol": "\u2193"
+      }
+    ]
+  }
 }

@@ -14,19 +14,24 @@
   background: var(--accent-green);
   z-index: 10000;
   transition: width 0.1s ease-out;
-  box-shadow: 0 0 8px rgb(163 230 53 / 60%);
+  box-shadow: 0 0 8px var(--accent-green);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--size-container-max-content);
+  margin: 0 auto;
+  padding: 0 var(--spacing-container);
 }
 
 @media (width >= 1920px) {
   .container {
-    padding: 0 var(--spacing-container);
-    max-width: var(--size-container-max-content);
+    max-width: 1800px;
   }
 }
 
 @media (width >= 2560px) {
   .container {
-    padding: 0 var(--spacing-container);
-    max-width: var(--size-container-max-content);
+    max-width: 2000px;
   }
 }

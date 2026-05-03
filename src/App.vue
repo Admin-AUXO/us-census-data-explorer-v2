@@ -1,68 +1,22 @@
 <template>
   <div id="app">
     <div class="scroll-tracker" :style="{ width: `${scrollPercentage}%` }"></div>
-    <HeaderControls @show-help="showHelp = true" @toggle-filters="filtersOpen = !filtersOpen" />
+    <HeaderControls :filters-open="filtersOpen" @toggle-filters="filtersOpen = !filtersOpen" />
     <HelpPanel v-if="showHelp" @close="showHelp = false" />
-    <DimensionFilters :is-open="filtersOpen" @close="filtersOpen = false" />
 
-    <Transition name="fade">
-      <div v-if="store.isLoading" class="level-transition-overlay">
-        <div class="transition-loader">
-          <div class="loader-spinner"></div>
-          <div class="loader-content">
-            <p class="loader-text">{{ transitionMessage }}</p>
-            <div v-if="store.loadingProgress.total > 0 && store.loadingProgress.percentage > 0" class="loader-progress">
-              <div class="progress-bar">
-                <div 
-                  class="progress-fill" 
-                  :style="{ width: `${store.loadingProgress.percentage}%` }"
-                ></div>
-              </div>
-              <p class="progress-text">
-                <span v-if="store.loadingProgress.loaded > 0">
-                  {{ store.loadingProgress.loaded.toLocaleString() }} 
-                  <span v-if="store.loadingProgress.total > 0">/ {{ store.loadingProgress.total.toLocaleString() }}</span>
-                </span>
-                <span v-if="store.loadingProgress.percentage > 0" class="progress-percentage">
-                  {{ store.loadingProgress.percentage }}%
-                </span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <main class="main-content" :class="{ 'with-sidebar': filtersOpen, 'transitioning': store.isLevelTransitioning }">
+    <main class="main-content" :class="{ transitioning: store.isLevelTransitioning }">
       <div class="container">
-        <SummaryPanel />
-
-        <div class="data-container">
-          <div class="table-wrapper">
-            <DataTable v-if="store.currentMetric && store.data.state" />
-            <div v-else class="empty-state">
-              <div class="empty-state-icon">
-                <Database :size="64" />
-              </div>
-              <h3>Get Started with Census Data Explorer</h3>
-              <p>Select a dataset, year, and metric from the controls above to begin exploring comprehensive US Census data across states, counties, and ZIP codes.</p>
-              <div class="empty-state-features">
-                <div class="feature-item">
-                  <MapPin :size="24" />
-                  <span>Multi-level Geographic Analysis</span>
-                </div>
-                <div class="feature-item">
-                  <TrendingUp :size="24" />
-                  <span>Rich Statistical Insights</span>
-                </div>
-                <div class="feature-item">
-                  <BarChart :size="24" />
-                  <span>Interactive Data Visualization</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ErrorBanner
+          v-if="store.hasError && !store.isLoading"
+          :visible="true"
+          severity="error"
+          title="Failed to Load Real Estate Data"
+          :message="store.errorMessage"
+          suggestion="Check public/data real-estate files and refresh."
+          :dismissible="true"
+          @dismiss="store.clearError()"
+        />
+        <MarketExplorer />
       </div>
     </main>
 
@@ -71,40 +25,38 @@
         <div class="footer-main">
           <div class="footer-brand">
             <AuxoLogo size="small" />
-            <div class="brand-info">
-              <p class="brand-site">auxodata.com</p>
-            </div>
+            <span class="brand-site">auxodata.com</span>
           </div>
           <div class="footer-sections">
             <div class="footer-section">
-              <h4>About</h4>
-              <p>Explore comprehensive US Census data through interactive visualizations across states, counties, and ZIP codes. Analyze demographic, economic, and housing trends with advanced filtering and statistical insights.</p>
+              <h4>Purpose</h4>
+              <p>Market screening board for expansion, underwriting, and site selection decisions.</p>
             </div>
             <div class="footer-section">
-              <h4>Data Source</h4>
-              <p>US Census Bureau - American Community Survey (ACS) 5-Year Estimates</p>
+              <h4>Data</h4>
+              <p>ACS 5-Year Estimates: housing, income, demographics, rent, vacancy, and affordability.</p>
             </div>
             <div class="footer-section">
-              <h4>Resources</h4>
+              <h4>Links</h4>
               <div class="footer-links">
-                <a href="#" @click.prevent="showHelp = true">
-                  <Info :size="16" />
-                  <span>Help Guide</span>
-                </a>
                 <a href="https://www.census.gov/data/developers/data-sets/acs-5year.html" target="_blank" rel="noopener noreferrer">
-                  <ExternalLink :size="16" />
-                  <span>API Docs</span>
+                  <ExternalLink :size="14" />
+                  <span>ACS 5-Year</span>
                 </a>
                 <a href="https://data.census.gov" target="_blank" rel="noopener noreferrer">
-                  <ExternalLink :size="16" />
+                  <ExternalLink :size="14" />
                   <span>Data Portal</span>
+                </a>
+                <a href="#" @click.prevent="showHelp = true">
+                  <Info :size="14" />
+                  <span>Guide</span>
                 </a>
               </div>
             </div>
           </div>
         </div>
         <div class="footer-bottom">
-          <p>&copy; 2026 AUXO Data Labs</p>
+          <p>For screening only. Validate with local comps, broker intel, and实地 due diligence before any capital commitment.</p>
         </div>
       </div>
     </footer>
@@ -112,53 +64,62 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useCensusStore } from './stores/census'
-import HeaderControls from './components/layout/HeaderControls.vue'
-import DataTable from './components/data/DataTable.vue'
-import SummaryPanel from './components/data/SummaryPanel.vue'
-import HelpPanel from './components/common/HelpPanel.vue'
-import DimensionFilters from './components/filters/DimensionFilters.vue'
-import { Database, MapPin, TrendingUp, BarChart, Info, ExternalLink } from 'lucide-vue-next'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { ExternalLink, Info } from 'lucide-vue-next'
 import AuxoLogo from './components/common/AuxoLogo.vue'
+import ErrorBanner from './components/common/ErrorBanner.vue'
+import HelpPanel from './components/common/HelpPanel.vue'
+import HeaderControls from './components/layout/HeaderControls.vue'
+import MarketExplorer from './components/data/MarketExplorer.vue'
+import { useCensusStore } from './stores/census'
+import { useKeyboardNavigation } from './composables/useKeyboardNavigation'
+import { useTheme } from './composables/useTheme'
+import { useUrlState } from './composables/useUrlState'
+
+const REAL_ESTATE_DATASET = 'industry_realestate_2018_2024'
+const DEFAULT_METRIC_BASE = 'market_opportunity_score'
 
 const store = useCensusStore()
+const { initTheme } = useTheme()
+const { init: initUrlState } = useUrlState()
 const showHelp = ref(false)
 const filtersOpen = ref(false)
 const scrollPercentage = ref(0)
 
-const updateScrollTracker = () => {
+useKeyboardNavigation({
+  onToggleHelp: () => { showHelp.value = !showHelp.value },
+  onToggleFilters: () => { filtersOpen.value = !filtersOpen.value },
+  onOpenCommandPalette: () => {}
+})
+
+async function loadRealEstateDashboard() {
+  store.currentDataset = REAL_ESTATE_DATASET
+  await store.loadDataset(REAL_ESTATE_DATASET)
+  await nextTick()
+
+  const latestYear = store.availableYears[0] || '2024'
+  store.currentYear = latestYear
+
+  const metric = `${DEFAULT_METRIC_BASE}_${latestYear}`
+  const firstRow = store.data.state?.[0] || {}
+  store.currentMetric = firstRow[metric] !== undefined ? metric : Object.keys(firstRow).find((key) => key.endsWith(`_${latestYear}`)) || null
+  store.compareYear = null
+  store.savePreferences()
+}
+
+function updateScrollTracker() {
   const windowHeight = window.innerHeight
   const documentHeight = document.documentElement.scrollHeight
   const scrollTop = window.scrollY || document.documentElement.scrollTop
   const scrollableHeight = documentHeight - windowHeight
-  
-  if (scrollableHeight > 0) {
-    scrollPercentage.value = (scrollTop / scrollableHeight) * 100
-  } else {
-    scrollPercentage.value = 0
-  }
+  scrollPercentage.value = scrollableHeight > 0 ? (scrollTop / scrollableHeight) * 100 : 0
 }
 
-const transitionMessage = computed(() => {
-  if (!store.isLoading) return 'Loading...'
-  if (store.loadingProgress.stage) {
-    return store.loadingProgress.stage
-  }
-  return 'Loading Data...'
-})
-
-const handleKeydown = (event) => {
-  if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') {
-    return
-  }
-
+function handleKeydown(event) {
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') return
   if (event.key === 'Escape') {
-    if (showHelp.value) {
-      showHelp.value = false
-    } else {
-      store.reset()
-    }
+    if (showHelp.value) showHelp.value = false
+    else if (filtersOpen.value) filtersOpen.value = false
   } else if (event.key === '?' || (event.key === '/' && event.shiftKey)) {
     event.preventDefault()
     showHelp.value = !showHelp.value
@@ -166,17 +127,18 @@ const handleKeydown = (event) => {
 }
 
 onMounted(async () => {
+  initTheme()
+  initUrlState()
   document.addEventListener('keydown', handleKeydown)
   window.addEventListener('scroll', updateScrollTracker, { passive: true })
   window.addEventListener('resize', updateScrollTracker, { passive: true })
   updateScrollTracker()
-  
+
   try {
-    if (!store.manifest) {
-      await store.loadManifest()
-    }
+    if (!store.manifest) await store.loadManifest()
+    await loadRealEstateDashboard()
   } catch (error) {
-    console.error('Failed to load manifest:', error)
+    console.error('Failed to initialize real estate dashboard:', error)
   }
 })
 
@@ -186,6 +148,3 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateScrollTracker)
 })
 </script>
-
-<style scoped>
-</style>

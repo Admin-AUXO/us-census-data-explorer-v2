@@ -1,5 +1,28 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { useCensusStore } from '../stores/census'
+import { getExecutiveMetricCatalog } from '../utils/executiveMetrics'
+
+const GEO_COLUMNS = new Set([
+  'state',
+  'state_name',
+  'state_fips',
+  'state_abbr',
+  'county',
+  'county_name',
+  'county_fips',
+  'zcta5',
+  'NAME',
+  'land_area_sq_km',
+  'water_area_sq_km',
+  'census_region',
+  'census_division',
+  'urban_rural',
+  'urban_area_name',
+  'cbsa_code',
+  'aiannh_name',
+  'congressional_district',
+  'cd116'
+])
 
 export const useFilters = () => {
   const store = useCensusStore()
@@ -8,6 +31,12 @@ export const useFilters = () => {
   const selectedYear = ref(store.currentYear || '')
   const selectedMetric = ref(store.currentMetric || '')
   const selectedCompareYear = ref(store.compareYear || '')
+  const metricCatalog = computed(() => getExecutiveMetricCatalog(store.manifest))
+
+  const selectedDatasetConfig = computed(() => {
+    if (!store.manifest?.datasets || !selectedDataset.value) return null
+    return store.manifest.datasets.find((dataset) => dataset.source_file === selectedDataset.value) || null
+  })
 
   const availableYears = computed(() => {
     if (!store.data.state?.length) {
@@ -34,34 +63,64 @@ export const useFilters = () => {
       .map(col => col.match(/_(\d{4})$/)?.[1])
       .filter(Boolean)
     )].sort().reverse()
-    
-    if (!years.length && store.currentDataset) {
+    if (years.length) return years
+
+    if (store.currentDataset) {
       console.error('[Filters] No years found. Columns:', columns.slice(0, 10))
     }
-    
-    return years
+    return (selectedDatasetConfig.value?.years_available || []).map(String).sort().reverse()
   })
 
   const availableMetrics = computed(() => {
     if (!store.data.state?.length || !selectedYear.value) return []
     const firstRow = store.data.state[0]
     if (!firstRow || typeof firstRow !== 'object') return []
-    return Object.keys(firstRow)
-      .filter(col => col.endsWith(`_${selectedYear.value}`))
-      .map(col => ({
-        value: col,
-        label: col.replace(/_(\d{4})$/, '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-      }))
+    const rawColumns = Object.keys(firstRow)
+    const columnsWithYear = rawColumns.filter(col => col.endsWith(`_${selectedYear.value}`))
+    const columns = columnsWithYear.length
+      ? columnsWithYear
+      : rawColumns
+        .filter((col) => !GEO_COLUMNS.has(col))
+        .filter((col) => !/_\d{4}$/.test(col))
+        .filter((col) => {
+          const value = firstRow[col]
+          return value !== null && value !== undefined && value !== '' && !Number.isNaN(Number.parseFloat(value))
+        })
+        .map((col) => `${col}_${selectedYear.value}`)
+    const preferredOrder = [
+      ...(selectedDatasetConfig.value?.display_columns || []),
+      ...(store.manifest?.industry_configs?.general?.display_columns || [])
+    ]
+    const orderMap = new Map(preferredOrder.map((metric, index) => [metric, index]))
+
+    return columns
+      .map((col) => {
+        const base = col.replace(/_(\d{4})$/, '')
+        const meta = metricCatalog.value.get(base)
+        return {
+          value: col,
+          base,
+          label: meta?.label || base.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          category: meta?.category || 'other',
+          order: orderMap.has(base) ? orderMap.get(base) : Number.MAX_SAFE_INTEGER
+        }
+      })
+      .sort((left, right) => {
+        if (left.order !== right.order) return left.order - right.order
+        if (left.category !== right.category) return left.category.localeCompare(right.category)
+        return left.label.localeCompare(right.label)
+      })
   })
 
   const compareYears = computed(() => {
-    if (!selectedMetric.value || !store.data.state?.length) return []
-    const firstRow = store.data.state[0]
-    if (!firstRow || typeof firstRow !== 'object') return []
-    const years = [...new Set(Object.keys(firstRow)
-      .map(col => col.match(/_(\d{4})$/)?.[1])
-      .filter(Boolean)
-    )].sort().reverse()
+    if (!selectedMetric.value) return []
+    const firstRow = store.data.state?.[0]
+    const years = firstRow && typeof firstRow === 'object'
+      ? [...new Set(Object.keys(firstRow)
+        .map(col => col.match(/_(\d{4})$/)?.[1])
+        .filter(Boolean)
+      )].sort().reverse()
+      : (selectedDatasetConfig.value?.years_available || []).map(String).sort().reverse()
     return years.filter(y => y !== selectedYear.value)
   })
 
@@ -121,13 +180,26 @@ export const useFilters = () => {
     }
   }
 
-  const onMetricChange = () => {
+const onMetricChange = () => {
     if (!selectedMetric.value) return
     store.currentMetric = selectedMetric.value
-    if (!store.compareYear) {
+    if (!store.compareYear && compareYears.value.length > 0) {
       store.setAutoCompareYear()
+    } else if (compareYears.value.length === 0) {
+      store.compareYear = null
     }
     store.savePreferences()
+  }
+
+  const setMetricByBase = (baseMetric) => {
+    if (!baseMetric) return
+    const yearSuffix = selectedYear.value ? `_${selectedYear.value}` : ''
+    const fullMetric = `${baseMetric}${yearSuffix}`
+    const found = availableMetrics.value.find(m => m.value === fullMetric || m.base === baseMetric)
+    if (found) {
+      selectedMetric.value = found.value
+      store.currentMetric = found.value
+    }
   }
 
   const handleCompareYearChange = (event) => {
@@ -153,6 +225,18 @@ export const useFilters = () => {
 
   watch(() => store.compareYear, (val) => {
     selectedCompareYear.value = val || ''
+  }, { immediate: true })
+
+  watch(compareYears, (years) => {
+    if (!years.length) {
+      store.compareYear = null
+      selectedCompareYear.value = ''
+      return
+    }
+    if (store.compareYear && !years.includes(store.compareYear)) {
+      store.compareYear = years[0]
+      selectedCompareYear.value = years[0]
+    }
   }, { immediate: true })
 
   watch(() => availableYears.value, async (years, oldYears) => {
@@ -193,6 +277,7 @@ export const useFilters = () => {
     onDatasetChange,
     onYearChange,
     onMetricChange,
-    handleCompareYearChange
+    handleCompareYearChange,
+    setMetricByBase
   }
 }

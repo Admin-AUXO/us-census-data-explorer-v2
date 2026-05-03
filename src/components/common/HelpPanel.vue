@@ -2,44 +2,45 @@
   <div class="help-panel show" @click.self="$emit('close')">
     <div class="help-content">
       <div class="help-header">
-        <h2>Quick Guide</h2>
+        <h2>Quick Read</h2>
         <button class="btn-close-help" @click="$emit('close')">×</button>
       </div>
       <div class="help-body">
         <div class="help-cards">
           <div class="help-card">
-            <h3>Getting Started</h3>
+            <h3>Start Here</h3>
             <ol>
-              <li>Select a <strong>dataset</strong> from the dropdown</li>
-              <li>Choose a <strong>year</strong> to analyze</li>
-              <li>Pick a <strong>metric</strong> to view</li>
-              <li>Data loads automatically in the table</li>
+              <li>Pick a <strong>Strategy lens</strong>. That gets you 80% of the way there.</li>
+              <li>Use <strong>Board Question</strong> when you want a different ranking logic.</li>
+              <li>Use filters only when the shortlist is too broad.</li>
+              <li>Open a card when the market feels worth a real conversation.</li>
             </ol>
           </div>
           <div class="help-card">
-            <h3>Exploring Data</h3>
+            <h3>Read A Card</h3>
             <ul>
-              <li><strong>Click any row</strong> to drill down (State → County → ZIP Code)</li>
-              <li><strong>Use search</strong> to find specific locations</li>
-              <li><strong>Click column headers</strong> to sort data</li>
-              <li><strong>Select compare year</strong> to see changes over time</li>
-              <li><strong>Click Filters</strong> to apply advanced filters</li>
+              <li><strong>Rank:</strong> where it sits in the current screen.</li>
+              <li><strong>Demand base:</strong> population, income, age, and housing units.</li>
+              <li><strong>Housing economics:</strong> value, rent, vacancy, and renter share.</li>
+              <li><strong>Badges:</strong> quick calls like Rental yield or Tight supply.</li>
             </ul>
           </div>
           <div class="help-card">
-            <h3>Understanding Colors</h3>
+            <h3>Use The Charts</h3>
             <ul>
-              <li><strong>Green cells:</strong> Higher values (darker = higher)</li>
-              <li><strong>Green badges:</strong> Positive changes</li>
-              <li><strong>Red badges:</strong> Negative changes</li>
-              <li><strong>Blue badges:</strong> Neutral changes</li>
+              <li><strong>Momentum:</strong> seven-year direction for the top market.</li>
+              <li><strong>Leaderboard:</strong> the top markets under the selected ranking.</li>
+              <li><strong>Demand vs risk:</strong> look for high demand with lower pressure.</li>
+              <li><strong>County drilldown:</strong> use it after a state passes the sniff test.</li>
             </ul>
           </div>
           <div class="help-card">
-            <h3>Keyboard Shortcuts</h3>
+            <h3>Keep It Honest</h3>
             <ul>
-              <li><strong>Esc:</strong> Close panels or reset view</li>
-              <li><strong>? or Shift + /:</strong> Toggle help</li>
+              <li><strong>Source:</strong> ACS 5-year Census data with derived real-estate signals.</li>
+              <li><strong>Use it for:</strong> screening and prioritizing markets.</li>
+              <li><strong>Do not use it for:</strong> final underwriting by itself.</li>
+              <li><strong>Next proof:</strong> comps, permits, taxes, insurance, and broker checks.</li>
             </ul>
           </div>
         </div>

@@ -6,12 +6,12 @@ export const parseCSV = async (text, onProgress) => {
       reject(new Error('Empty or invalid CSV text provided'))
       return
     }
-    
+
     const lines = text.split('\n').filter(line => line.trim().length > 0)
     const estimatedTotal = Math.max(1, lines.length - 1)
     const collectedData = []
     let rowCount = 0
-    let hasStepData = false
+    let errorCount = 0
 
     Papa.parse(text, {
       header: true,
@@ -19,13 +19,16 @@ export const parseCSV = async (text, onProgress) => {
       skipEmptyLines: true,
       fastMode: false,
       worker: false,
+      silent: true,
       step: (result) => {
-        if (result.data) {
+        if (result.data && Object.keys(result.data).length > 0) {
           collectedData.push(result.data)
-          hasStepData = true
         }
-        if (result.errors && result.errors.length > 0 && import.meta.env.DEV) {
-          console.warn('[CSV Parser] Row parsing errors:', result.errors)
+        if (result.errors && result.errors.length > 0) {
+          const criticalErrors = result.errors.filter(e => e.type !== 'FieldMismatch')
+          if (criticalErrors.length > 0) {
+            errorCount += criticalErrors.length
+          }
         }
         rowCount++
         if (onProgress && rowCount % 5000 === 0) {
@@ -34,16 +37,16 @@ export const parseCSV = async (text, onProgress) => {
       },
       chunkSize: 2 * 1024 * 1024,
       complete: (results) => {
-        if (results.errors && results.errors.length > 0) {
-          console.warn('[CSV Parser] Parsing completed with errors:', results.errors.slice(0, 5))
+        if (errorCount > 0 && import.meta.env.DEV) {
+          console.warn(`[CSV Parser] ${errorCount} rows had critical parsing errors`)
         }
-        const finalData = hasStepData ? collectedData : (results.data || [])
+        const finalData = collectedData
         if (!Array.isArray(finalData)) {
           reject(new Error(`Invalid parse result: expected array, got ${typeof finalData}`))
           return
         }
         if (finalData.length === 0) {
-          const errorMsg = `No data rows parsed from CSV. Lines: ${lines.length}, Collected: ${collectedData.length}, Results.data: ${results.data?.length || 0}`
+          const errorMsg = `No data rows parsed from CSV. Lines: ${lines.length}, Results errors: ${results?.errors?.length || 0}`
           console.error('[CSV Parser]', errorMsg)
           reject(new Error(errorMsg))
           return
